@@ -3,224 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tasks Earnings</title>
+    <title>Tasks Earnings Bot</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- SDK Ad script (Stay as requested) -->
     <script src='//libtl.com/sdk.js' data-zone='11003643' data-sdk='show_11003643'></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
-        body { font-family: 'Outfit', sans-serif; background: #f1f5f9; padding-bottom: 90px; user-select: none; }
-        .tab-content { display: none; animation: slideUp 0.3s ease; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #f8fafc; padding-bottom: 100px; user-select: none; }
+        .tab-content { display: none; animation: slideUp 0.4s ease-out; }
         .tab-content.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-btn.active { color: #2563eb; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-btn.active { color: #2563eb; transform: translateY(-5px); }
+        .glass-card { background: white; border-radius: 2rem; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
-    <div id="loader" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center">
-        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-blue-600 font-bold">Syncing Profile...</p>
+    <!-- LOADER -->
+    <div id="loader" class="fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-blue-600 font-bold animate-pulse uppercase text-xs tracking-widest">Securing Connection...</p>
     </div>
 
     <div class="p-4 max-w-md mx-auto">
-        <!-- HEADER -->
-        <div class="bg-white p-5 rounded-[2rem] shadow-sm flex items-center justify-between mb-6 border border-slate-50">
+        <!-- HEADER STATUS -->
+        <div class="glass-card p-5 flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
-                <img id="u-pfp" src="https://ui-avatars.com/api/?name=User" class="w-12 h-12 rounded-2xl ring-4 ring-blue-50 shadow-sm">
-                <div><h2 id="u-name" class="font-black text-slate-800 leading-tight">...</h2><p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest"><span id="u-coins">0</span> Coins</p></div>
+                <img id="u-pfp" src="" class="w-12 h-12 rounded-2xl ring-4 ring-blue-50">
+                <div>
+                    <h2 id="u-name" class="font-bold text-slate-800 leading-tight">User</h2>
+                    <p class="text-[10px] font-black text-blue-600 uppercase tracking-tighter"><span id="u-coins">0</span> Coins</p>
+                </div>
             </div>
             <div class="text-right">
-                <p class="text-[8px] font-black text-slate-300 uppercase">Rupees</p>
+                <p class="text-[8px] font-bold text-slate-400 uppercase">Cash Value</p>
                 <h3 class="text-xl font-black text-slate-800">₹<span id="u-rupees">0</span></h3>
             </div>
         </div>
 
-        <!-- HOME TAB -->
+        <!-- TAB: HOME (MISSIONS) -->
         <section id="tab-home" class="tab-content active">
-            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2.5rem] text-white shadow-xl mb-8">
-                <h4 class="font-black text-xl mb-1 italic">INVITE & EARN</h4>
-                <p class="text-[10px] opacity-80 mb-6 font-medium uppercase tracking-widest">Get 500 Coins for every friend</p>
-                <button onclick="copyRef()" class="bg-white text-blue-600 px-8 py-3 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition">COPY LINK</button>
+            <div class="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-[2.5rem] text-white shadow-xl mb-8 relative overflow-hidden">
+                <h4 class="font-black text-xl mb-1 italic uppercase">Refer & Earn</h4>
+                <p class="text-[10px] opacity-80 mb-6 uppercase font-bold tracking-widest">+500 Coins Per Friend</p>
+                <button onclick="copyRef()" class="bg-white text-blue-600 px-8 py-3 rounded-2xl font-black text-xs shadow-lg active:scale-95 transition-all">GET MY LINK</button>
+                <i class="fas fa-paper-plane absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12"></i>
             </div>
-            <h4 class="text-xs font-black text-slate-400 uppercase ml-2 mb-4">Missions</h4>
-            <div id="task-list" class="space-y-4"></div>
+            
+            <div class="bg-amber-100/50 border-2 border-dashed border-amber-300 p-5 rounded-[2rem] mb-6 flex items-center justify-between">
+                <div><h4 class="font-black text-amber-900 text-[10px] uppercase">Daily Video Ad</h4><p class="text-[10px] text-amber-700 font-bold">+10 COINS (SDK)</p></div>
+                <button onclick="playSdkAd()" class="bg-amber-500 text-white px-6 py-2.5 rounded-xl font-black text-xs shadow-lg active:scale-90 transition">PLAY</button>
+            </div>
+
+            <h4 class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-4 tracking-widest">Available Tasks</h4>
+            <div id="task-list" class="space-y-3"></div>
         </section>
 
-        <!-- TASKS TAB (ADS) -->
-        <section id="tab-tasks" class="tab-content">
-            <div class="bg-amber-100/50 border-2 border-dashed border-amber-300 p-6 rounded-[2.5rem] mb-6 flex items-center justify-between">
-                <div><h4 class="font-black text-amber-900 uppercase text-xs">Ad Bonus</h4><p class="text-[10px] text-amber-700 font-bold">+<span id="conf-ad">0</span> COINS</p></div>
-                <button onclick="playAd()" class="bg-amber-500 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-lg">WATCH</button>
-            </div>
+        <!-- TAB: DIRECT ADS (UNLIMITED) -->
+        <section id="tab-ads" class="tab-content">
+            <h2 class="text-xl font-black text-slate-800 mb-6 uppercase tracking-tighter">Unlimited Direct Ads</h2>
+            <div id="direct-ad-list" class="space-y-4"></div>
         </section>
 
-        <!-- PAYOUT TAB -->
+        <!-- TAB: PAYOUT + WITHDRAWAL HISTORY -->
         <section id="tab-payout" class="tab-content">
-            <div class="bg-white p-10 rounded-[3rem] border border-slate-50 shadow-sm text-center">
-                <h2 class="text-2xl font-black text-slate-800 mb-2">Withdraw</h2>
-                <p class="text-[10px] text-orange-500 font-black mb-10 uppercase tracking-widest text-center">Minimum Withdrawal: ₹<span id="conf-min">0</span></p>
-                <input id="upi-id" type="text" placeholder="UPI ID" class="w-full p-5 bg-slate-50 rounded-2xl mb-4 border-none outline-none font-bold text-center">
-                <input id="wdr-amt" type="number" placeholder="Amount (₹)" class="w-full p-5 bg-slate-50 rounded-2xl mb-8 border-none outline-none font-bold text-center">
-                <button onclick="requestPayout()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-black shadow-xl">REQUEST PAYOUT</button>
+            <div class="glass-card p-8 text-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase italic">Withdraw</h2>
+                <p class="text-[10px] text-orange-500 font-black mb-8 uppercase tracking-widest">MINIMUM REDEEM: ₹<span id="conf-min">100</span></p>
+                <input id="upi-id" type="text" placeholder="UPI ID" class="w-full p-4 bg-slate-50 rounded-2xl mb-4 border-none outline-none font-bold text-center text-sm">
+                <input id="wdr-amt" type="number" placeholder="Amount ₹" class="w-full p-4 bg-slate-50 rounded-2xl mb-8 border-none outline-none font-bold text-center text-sm">
+                <button onclick="requestPayout()" class="w-full bg-blue-600 text-white py-5 rounded-3xl font-black shadow-xl active:scale-95 transition">REQUEST PAYOUT</button>
             </div>
+            <h4 class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-4 tracking-widest">Recent Transactions</h4>
+            <div id="wdr-history" class="space-y-2"></div>
+        </section>
+
+        <!-- TAB: PROFILE & COIN LOGS -->
+        <section id="tab-me" class="tab-content">
+            <div class="glass-card p-6 mb-8 text-center">
+                <img id="p-photo" src="" class="w-20 h-20 rounded-3xl mx-auto mb-4 border-4 border-blue-50 shadow-md">
+                <h3 id="p-name" class="font-black text-xl text-slate-800">...</h3>
+                <p class="text-[10px] text-slate-400 font-bold mb-4 tracking-widest">USER ID: <span id="p-id">0</span></p>
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                    <div class="bg-slate-50 p-3 rounded-2xl"><p class="text-[8px] font-bold text-slate-400 uppercase">Total Earned</p><p class="font-black text-blue-600" id="p-total-earned">0</p></div>
+                    <div class="bg-slate-50 p-3 rounded-2xl"><p class="text-[8px] font-bold text-slate-400 uppercase">Total Paid</p><p class="font-black text-green-600" id="p-total-paid">₹0</p></div>
+                </div>
+            </div>
+            <h4 class="text-[10px] font-black text-slate-400 uppercase ml-2 mb-4 tracking-widest">Coin History</h4>
+            <div id="coin-history" class="space-y-2 pb-10"></div>
         </section>
     </div>
 
     <!-- BOTTOM NAV -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t p-4 flex justify-around items-center z-40">
-        <button onclick="openTab('home')" id="n-home" class="nav-btn active flex flex-col items-center gap-1"><i class="fas fa-house text-xl"></i><span class="text-[8px] font-black uppercase">Home</span></button>
-        <button onclick="openTab('tasks')" id="n-tasks" class="nav-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-play-circle text-xl"></i><span class="text-[8px] font-black uppercase">Ads</span></button>
-        <button onclick="openTab('payout')" id="n-payout" class="nav-btn text-slate-300 flex flex-col items-center gap-1"><i class="fas fa-wallet text-xl"></i><span class="text-[8px] font-black uppercase">Payout</span></button>
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t p-4 flex justify-around items-center z-40 shadow-2xl">
+        <button onclick="openTab('home')" id="n-home" class="nav-btn active flex flex-col items-center gap-1 transition-all"><i class="fas fa-home-alt text-xl"></i><span class="text-[8px] font-black uppercase">Home</span></button>
+        <button onclick="openTab('ads')" id="n-ads" class="nav-btn text-slate-300 flex flex-col items-center gap-1 transition-all"><i class="fas fa-bolt text-xl"></i><span class="text-[8px] font-black uppercase">Direct</span></button>
+        <button onclick="openTab('payout')" id="n-payout" class="nav-btn text-slate-300 flex flex-col items-center gap-1 transition-all"><i class="fas fa-wallet text-xl"></i><span class="text-[8px] font-black uppercase">Payout</span></button>
+        <button onclick="openTab('me')" id="n-me" class="nav-btn text-slate-300 flex flex-col items-center gap-1 transition-all"><i class="fas fa-user-circle text-xl"></i><span class="text-[8px] font-black uppercase">Me</span></button>
     </nav>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyBbqNPQfhPHqZuhZM2zzGQnf4f53Sw-jrU",
-            authDomain: "tasksearningsbot.firebaseapp.com",
-            projectId: "tasksearningsbot",
-            storageBucket: "tasksearningsbot.firebasestorage.app",
-            messagingSenderId: "721160571309",
-            appId: "1:721160571309:web:35d389bf57f511e6a73924"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyBbqNPQfhPHqZuhZM2zzGQnf4f53Sw-jrU", authDomain: "tasksearningsbot.firebaseapp.com", projectId: "tasksearningsbot", storageBucket: "tasksearningsbot.firebasestorage.app", messagingSenderId: "721160571309", appId: "1:721160571309:web:35d389bf57f511e6a73924" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         let tg = window.Telegram.WebApp;
         let user = null;
-        let config = { coin_rate: 100, ads_reward: 10, min_withdrawal: 100 };
+        let config = { coin_rate: 100, min_withdrawal: 100 };
         let claimedTasks = new Set();
         let visitedTasks = new Set();
+        let adVisited = {};
 
         async function start() {
             tg.expand();
-            
-            // 1. Load Settings
-            db.collection('settings').doc('global').onSnapshot(doc => {
-                if(doc.exists) config = doc.data();
-                document.getElementById('conf-ad').innerText = config.ads_reward;
-                document.getElementById('conf-min').innerText = config.min_withdrawal;
-                if(user) renderUI();
-            });
-
-            // 2. Load User
-            const tgUser = tg.initDataUnsafe?.user || { id: 12345, first_name: "TestUser" };
+            db.collection('settings').doc('global').onSnapshot(doc => { if(doc.exists) config = doc.data(); document.getElementById('conf-min').innerText = config.min_withdrawal; if(user) renderUI(); });
+            const tgUser = tg.initDataUnsafe?.user || { id: 1234567, first_name: "Test User" };
             const uId = tgUser.id.toString();
 
             db.collection('users').doc(uId).onSnapshot(snap => {
-                if(snap.exists) {
-                    user = snap.data();
-                    renderUI();
+                if(snap.exists) { 
+                    user = snap.data(); renderUI(); 
+                    loadHistory(uId);
                     loadUserClaims(uId);
                 } else {
-                    db.collection('users').doc(uId).set({
-                        id: tgUser.id, name: tgUser.first_name, photoURL: tgUser.photo_url || `https://ui-avatars.com/api/?name=${tgUser.first_name}`,
-                        coins: 0, reffer: 0, totalWithdrawals: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    db.collection('users').doc(uId).set({ id: tgUser.id, name: tgUser.first_name, photoURL: tgUser.photo_url || `https://ui-avatars.com/api/?name=${tgUser.first_name}`, coins: 0, totalWithdrawals: 0, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 }
                 document.getElementById('loader').classList.add('hidden');
             });
-            loadTasks();
+            loadDirectAds();
         }
 
-        function loadUserClaims(uId) {
-            db.collection('user_claims').where('userId', '==', uId).onSnapshot(snap => {
-                claimedTasks = new Set(snap.docs.map(d => d.data().taskId));
-                loadTasks();
-            });
-        }
+        function loadUserClaims(uId) { db.collection('user_claims').where('userId', '==', parseInt(uId)).onSnapshot(snap => { claimedTasks = new Set(snap.docs.map(d => d.data().taskId)); loadTasks(uId); }); }
 
         function renderUI() {
-            const rupees = (user.coins / config.coin_rate).toFixed(2);
             document.getElementById('u-name').innerText = user.name;
             document.getElementById('u-pfp').src = user.photoURL;
             document.getElementById('u-coins').innerText = user.coins;
-            document.getElementById('u-rupees').innerText = rupees;
+            document.getElementById('u-rupees').innerText = (user.coins / config.coin_rate).toFixed(2);
+            document.getElementById('p-name').innerText = user.name;
+            document.getElementById('p-id').innerText = user.id;
+            document.getElementById('p-photo').src = user.photoURL;
+            document.getElementById('p-total-paid').innerText = '₹' + (user.totalWithdrawals || 0);
+            document.getElementById('p-total-earned').innerText = user.coins;
         }
 
-        function loadTasks() {
-            db.collection('tasks').orderBy('createdAt','desc').onSnapshot(snap => {
-                const tasks = snap.docs.map(d => ({id: d.id, ...d.data()}));
-                document.getElementById('task-list').innerHTML = tasks.map(t => {
-                    const isDone = claimedTasks.has(t.id);
-                    const isVisited = visitedTasks.has(t.id);
+        function loadHistory(uId) {
+            db.collection('withdrawals').where('userId', '==', parseInt(uId)).orderBy('createdAt','desc').limit(5).onSnapshot(snap => {
+                document.getElementById('wdr-history').innerHTML = snap.docs.map(doc => `<div class="bg-white p-4 rounded-2xl flex justify-between border-b"><span class="font-bold text-slate-700">Withdrawal ₹${doc.data().amount}</span><span class="font-black text-[10px] uppercase ${doc.data().status === 'approved' ? 'text-green-500' : 'text-orange-500'}">${doc.data().status}</span></div>`).join('') || '<p class="text-center text-slate-300 py-4 text-xs font-bold uppercase">No History</p>';
+            });
+            db.collection('coin_logs').where('userId', '==', uId).orderBy('createdAt','desc').limit(10).onSnapshot(snap => {
+                document.getElementById('coin-history').innerHTML = snap.docs.map(doc => `<div class="bg-white p-4 rounded-2xl flex justify-between mb-2"><div><p class="font-black text-slate-700 uppercase text-[9px]">${doc.data().type}</p><p class="text-[7px] text-slate-400 font-bold">${doc.data().createdAt?.toDate().toLocaleString()}</p></div><span class="font-black text-blue-600 text-sm">+${doc.data().amount}</span></div>`).join('') || '<p class="text-center text-slate-300 py-4 text-xs font-bold uppercase">No Logs</p>';
+            });
+        }
 
-                    return `
-                    <div class="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-50 ${isDone ? 'opacity-50' : ''}">
-                        <div class="flex-1 pr-2">
-                            <h4 class="font-black text-xs text-slate-800 uppercase">${t.name}</h4>
-                            <p class="text-[10px] text-blue-600 font-black">+ ${t.reward} COINS</p>
-                        </div>
-                        <div class="flex gap-2">
-                            ${isDone ? 
-                                '<span class="text-[10px] font-bold text-slate-400">COMPLETED</span>' : 
-                                (isVisited ? 
-                                    `<button onclick="claimTask('${t.id}', ${t.reward})" class="bg-green-500 text-white px-6 py-2 rounded-xl text-[10px] font-black shadow-lg">CLAIM</button>` : 
-                                    `<button onclick="visitLink('${t.id}', '${t.link}')" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-[10px] font-black shadow-lg">VISIT</button>`
-                                )
-                            }
-                        </div>
+        // ADS SDK
+        async function playSdkAd() {
+            if (typeof show_11003643 === 'function') {
+                show_11003643().then(async () => {
+                    const uId = user.id.toString();
+                    await db.collection('users').doc(uId).update({ coins: firebase.firestore.FieldValue.increment(10) });
+                    await db.collection('coin_logs').add({ userId: uId, type: 'SDK Video Ad', amount: 10, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                });
+            } else Swal.fire('Error', 'Ad not ready', 'error');
+        }
+
+        // DIRECT ADS (Unlimited)
+        function loadDirectAds() {
+            db.collection('ads_direct').orderBy('createdAt','desc').onSnapshot(snap => {
+                document.getElementById('direct-ad-list').innerHTML = snap.docs.map(doc => {
+                    const isVisited = adVisited[doc.id];
+                    return `<div class="glass-card p-5 flex items-center justify-between border border-indigo-50 shadow-sm">
+                        <div class="flex-1"><h4 class="font-black text-slate-800 uppercase text-xs">${doc.data().name}</h4><p class="text-indigo-600 font-bold text-[10px] tracking-widest">+${doc.data().reward} COINS (UNLIMITED)</p></div>
+                        ${isVisited ? `<button onclick="claimDirectAd('${doc.id}', ${doc.data().reward}, '${doc.data().name}')" class="bg-green-500 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-lg shadow-green-100">CLAIM</button>` : 
+                        `<button onclick="window.open('${doc.data().link}','_blank'); adVisited['${doc.id}']=true; loadDirectAds();" class="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-xs shadow-lg shadow-indigo-100">VISIT</button>`}
                     </div>`;
                 }).join('');
             });
         }
 
-        function visitLink(id, link) {
-            window.open(link, '_blank');
-            visitedTasks.add(id);
-            loadTasks(); // Button switch karne ke liye
-            Swal.fire({ title: 'Task Visited!', text: 'Wapas aa kar Claim par click karein', icon: 'success', toast: true, position: 'top', timer: 3000 });
-        }
-
-        async function claimTask(taskId, reward) {
+        async function claimDirectAd(id, reward, name) {
             const uId = user.id.toString();
-            const claimId = `${uId}_${taskId}`;
-            
-            // UI Loader
-            Swal.fire({ title: 'Claiming...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-            try {
-                const claimRef = db.collection('user_claims').doc(claimId);
-                const userRef = db.collection('users').doc(uId);
-
-                await db.runTransaction(async (transaction) => {
-                    const claimDoc = await transaction.get(claimRef);
-                    if (claimDoc.exists) throw "Pehle hi claim kar liya hai!";
-
-                    transaction.set(claimRef, {
-                        userId: uId,
-                        taskId: taskId,
-                        claimedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-
-                    transaction.update(userRef, {
-                        coins: firebase.firestore.FieldValue.increment(reward)
-                    });
-                });
-
-                Swal.fire({ icon: 'success', title: 'Coins Added!', text: `+${reward} coins received`, toast: true, position: 'top' });
-            } catch (e) {
-                Swal.fire('Error', e.toString(), 'error');
-            }
+            const batch = db.batch();
+            batch.update(db.collection('users').doc(uId), { coins: firebase.firestore.FieldValue.increment(reward) });
+            batch.set(db.collection('coin_logs').doc(), { userId: uId, type: 'Direct Ad: ' + name, amount: reward, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+            await batch.commit();
+            adVisited[id] = false; loadDirectAds();
+            Swal.fire({ icon: 'success', title: 'Coins Received!', toast: true, position: 'top', timer: 2000 });
         }
 
-        async function playAd() {
-            if (typeof show_11003643 === 'function') {
-                show_11003643().then(async () => {
-                    await db.collection('users').doc(user.id.toString()).update({ coins: firebase.firestore.FieldValue.increment(config.ads_reward) });
-                    Swal.fire({ icon: 'success', title: 'Ad Reward Added!', toast: true, position: 'top' });
+        // TASKS (One-Time)
+        function loadTasks(uId) {
+            db.collection('tasks').onSnapshot(snap => {
+                document.getElementById('task-list').innerHTML = snap.docs.map(doc => {
+                    const isDone = claimedTasks.has(doc.id);
+                    const isVisited = visitedTasks.has(doc.id);
+                    return `<div class="bg-white p-5 rounded-[2rem] flex items-center justify-between border border-slate-50 ${isDone ? 'opacity-40' : ''}">
+                        <div><h4 class="font-black text-xs uppercase">${doc.data().name}</h4><p class="text-blue-600 font-black text-[10px]">+${doc.data().reward} COINS</p></div>
+                        ${isDone ? '<span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Done</span>' : (isVisited ? `<button onclick="claimTask('${doc.id}',${doc.data().reward},'${doc.data().name}')" class="bg-green-500 text-white px-6 py-2.5 rounded-xl font-black text-[10px] shadow-lg">CLAIM</button>` : `<button onclick="window.open('${doc.data().link}','_blank'); visitedTasks.add('${doc.id}'); loadTasks('${uId}');" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] shadow-lg">VISIT</button>`)}
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        async function claimTask(taskId, reward, name) {
+            const uId = user.id.toString();
+            try {
+                await db.runTransaction(async (transaction) => {
+                    const userRef = db.collection('users').doc(uId);
+                    const claimRef = db.collection('user_claims').doc(`${uId}_${taskId}`);
+                    const logRef = db.collection('coin_logs').doc();
+                    const snap = await transaction.get(claimRef);
+                    if (snap.exists) throw "Already claimed!";
+                    transaction.set(claimRef, { userId: parseInt(uId), taskId: taskId, claimedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    transaction.update(userRef, { coins: firebase.firestore.FieldValue.increment(reward) });
+                    transaction.set(logRef, { userId: uId, type: 'Task: ' + name, amount: reward, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 });
-            } else Swal.fire('Error', 'Ads not ready', 'error');
+                Swal.fire({ icon: 'success', title: 'Coins Added!', toast: true, position: 'top', timer: 2000 });
+            } catch (e) { Swal.fire('Error', 'Already Claimed', 'error'); }
         }
 
         async function requestPayout() {
             const upi = document.getElementById('upi-id').value;
             const amt = parseFloat(document.getElementById('wdr-amt').value);
-            const userRupees = user.coins / config.coin_rate;
-            if(!upi || amt < config.min_withdrawal) return Swal.fire('Wait!', `Min withdrawal ₹${config.min_withdrawal}`, 'warning');
-            if(amt > userRupees) return Swal.fire('Error', 'Insufficient Balance', 'error');
+            if(!upi || isNaN(amt) || amt < config.min_withdrawal) return Swal.fire('Wait!', `Minimum ₹${config.min_withdrawal}`, 'warning');
+            if(amt > (user.coins / config.coin_rate)) return Swal.fire('Error', 'Low Balance', 'error');
 
             const batch = db.batch();
             batch.set(db.collection('withdrawals').doc(), { userId: user.id, upi, amount: amt, status: 'pending', createdAt: firebase.firestore.FieldValue.serverTimestamp() });
@@ -239,7 +250,7 @@
         function copyRef() {
             const link = `https://t.me/Tasks_earnings_bot?start=${user.id}`;
             navigator.clipboard.writeText(link);
-            Swal.fire({ icon: 'success', title: 'Copied!', toast: true, position: 'top' });
+            Swal.fire({ icon: 'success', title: 'Link Copied!', toast: true, position: 'top', timer: 2000 });
         }
 
         window.onload = start;

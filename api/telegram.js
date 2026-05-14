@@ -30,7 +30,6 @@ const db = getFirestore(firebaseApp);
 async function processReferralReward(userId, referrerId) {
     if (!referrerId || userId.toString() === referrerId.toString()) return;
 
-    const userRef = doc(db, "users", userId.toString());
     const referrerRef = doc(db, "users", referrerId.toString());
     const rewardRef = doc(db, "ref_rewards", userId.toString());
 
@@ -39,7 +38,6 @@ async function processReferralReward(userId, referrerId) {
             const rewardDoc = await transaction.get(rewardRef);
             const referrerDoc = await transaction.get(referrerRef);
 
-            // Sirf tabhi reward dein jab pehle na mila ho aur referrer exist karta ho
             if (!rewardDoc.exists() && referrerDoc.exists()) {
                 transaction.update(referrerRef, {
                     coins: increment(500),
@@ -71,15 +69,12 @@ module.exports = async (req, res) => {
         if (message && message.text && message.text.startsWith('/start')) {
             const userId = message.from.id;
             const firstName = message.from.first_name;
-            
-            // Link se referral ID nikalna: /start 12345
             const startParam = message.text.split(' ')[1] || null;
 
             const userRef = doc(db, "users", userId.toString());
             const userSnap = await getDoc(userRef);
 
             if (!userSnap.exists()) {
-                // Naya user register karein
                 await setDoc(userRef, {
                     id: userId,
                     name: firstName,
@@ -94,13 +89,11 @@ module.exports = async (req, res) => {
                     createdAt: serverTimestamp()
                 });
 
-                // Referral reward process karein
                 if (startParam) {
                     await processReferralReward(userId, startParam);
                 }
             }
 
-            // Welcome Message bhejien
             const welcomeText = `👋 Hi ${firstName}! Welcome to Tasks Earnings ⭐\n\nYahan aap tasks complete karke real cash kama sakte ho!\n\n🚀 Invite friends and get 500 coins!\n💰 Instant Withdrawal in UPI!\n\nReady to start? Tap the button below!`;
 
             await bot.sendPhoto(userId, "https://i.ibb.co/CKK6Hyqq/1e48400d0ef9.jpg", {
@@ -114,7 +107,7 @@ module.exports = async (req, res) => {
                             }
                         ],
                         [
-                            { text: "📢 Join Channel", url: "https://t.me/finisher_tech" }
+                            { text: "📢 Join Channel", url: "https://t.me/jaysingtech00" }
                         ]
                     ]
                 }
@@ -123,7 +116,6 @@ module.exports = async (req, res) => {
 
         res.status(200).send('OK');
     } catch (error) {
-        console.error('Error:', error);
-        res.status(200).send('Error Handled');
+        res.status(200).send('Error');
     }
 };

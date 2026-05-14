@@ -3,182 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Admin - Tasks Control</title>
-    
+    <title>Master Admin - Tasks Earnings</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #f8fafc; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .sidebar-active { background: #2563eb; color: white; box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4); }
-        #login-overlay { background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(8px); }
+        .sidebar-active { background: #2563eb; color: white; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+        #login-screen { background: radial-gradient(circle at top right, #1e293b, #0f172a); }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-overlay" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-        <div class="bg-white rounded-[2.5rem] p-10 w-full max-w-md shadow-2xl text-center">
-            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <i class="fas fa-user-shield text-4xl"></i>
-            </div>
-            <h1 class="text-3xl font-extrabold text-slate-800 mb-2">Master Control</h1>
-            <p class="text-slate-400 mb-8 font-medium">Verify credentials to manage bot</p>
-            <div class="space-y-4 text-left">
-                <input type="text" id="adm-user" placeholder="Username" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-500 outline-none transition">
-                <input type="password" id="adm-pass" placeholder="Password" class="w-full p-4 bg-slate-50 rounded-2xl border-2 border-transparent focus:border-blue-500 outline-none transition tracking-widest">
-                <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-xl hover:bg-blue-700 transition active:scale-95">Enter Admin Hub</button>
-            </div>
+<body>
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2rem] p-10 w-full max-w-md shadow-2xl text-center">
+            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 rotate-3"><i class="fas fa-lock text-3xl"></i></div>
+            <h1 class="text-3xl font-black text-slate-800 mb-8 uppercase tracking-tighter">Master Access</h1>
+            <input type="text" id="adm-u" placeholder="Username" class="w-full p-4 bg-slate-50 rounded-2xl mb-4 border-none outline-none font-bold">
+            <input type="password" id="adm-p" placeholder="Password" class="w-full p-4 bg-slate-50 rounded-2xl mb-8 border-none outline-none font-bold">
+            <button onclick="login()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-xl active:scale-95 transition">SIGN IN</button>
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
     <div id="admin-app" class="hidden flex flex-col lg:flex-row min-h-screen">
-        
-        <!-- SIDEBAR -->
-        <aside class="bg-white border-r lg:w-72 flex lg:flex-col sticky top-0 lg:h-screen z-50 p-4 gap-2">
-            <div class="hidden lg:flex items-center gap-3 px-4 py-8 mb-4 border-b">
-                <div class="bg-blue-600 w-10 h-10 rounded-xl text-white flex items-center justify-center"><i class="fas fa-cogs"></i></div>
-                <span class="font-black text-xl text-slate-800 tracking-tight">BOT SETTINGS</span>
-            </div>
-            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-active flex items-center gap-4 px-5 py-4 rounded-2xl w-full font-bold transition-all">
-                <i class="fas fa-chart-pie"></i> Dashboard
-            </button>
-            <button onclick="switchTab('settings')" id="nav-settings" class="flex items-center gap-4 px-5 py-4 rounded-2xl w-full font-bold text-slate-400 transition-all">
-                <i class="fas fa-sliders-h"></i> App Control
-            </button>
-            <button onclick="switchTab('tasks')" id="nav-tasks" class="flex items-center gap-4 px-5 py-4 rounded-2xl w-full font-bold text-slate-400 transition-all">
-                <i class="fas fa-tasks"></i> Manage Tasks
-            </button>
-            <button onclick="switchTab('withdrawals')" id="nav-withdrawals" class="flex items-center gap-4 px-5 py-4 rounded-2xl w-full font-bold text-slate-400 transition-all">
-                <i class="fas fa-wallet"></i> Payouts
-            </button>
-            <button onclick="switchTab('users')" id="nav-users" class="flex items-center gap-4 px-5 py-4 rounded-2xl w-full font-bold text-slate-400 transition-all">
-                <i class="fas fa-users-cog"></i> Users
-            </button>
+        <aside class="bg-white lg:w-72 border-r p-6 sticky top-0 lg:h-screen flex lg:flex-col gap-2">
+            <div class="hidden lg:flex items-center gap-3 mb-10"><div class="bg-blue-600 w-10 h-10 rounded-xl text-white flex items-center justify-center"><i class="fas fa-bolt"></i></div><span class="font-black text-xl text-slate-800">JSBOT HUB</span></div>
+            <button onclick="switchTab('dashboard')" id="n-dashboard" class="sidebar-active flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all w-full text-left"><i class="fas fa-chart-line"></i> Dashboard</button>
+            <button onclick="switchTab('settings')" id="n-settings" class="text-slate-400 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all w-full text-left"><i class="fas fa-sliders-h"></i> Control</button>
+            <button onclick="switchTab('tasks')" id="n-tasks" class="text-slate-400 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all w-full text-left"><i class="fas fa-tasks"></i> Missions</button>
+            <button onclick="switchTab('withdrawals')" id="n-withdrawals" class="text-slate-400 flex items-center gap-4 px-6 py-4 rounded-2xl font-bold transition-all w-full text-left"><i class="fas fa-wallet"></i> Payouts</button>
         </aside>
 
-        <!-- CONTENT -->
-        <div class="flex-1 overflow-y-auto">
-            <header class="bg-white/80 backdrop-blur-md p-6 border-b flex justify-between items-center sticky top-0 z-40">
-                <h2 id="page-title" class="font-bold text-2xl text-slate-800">Dashboard</h2>
-                <div class="flex items-center gap-4">
-                    <button onclick="location.reload()" class="p-2 text-slate-400 hover:text-blue-600"><i class="fas fa-sync-alt"></i></button>
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">A</div>
+        <main class="flex-1 p-6 lg:p-12 overflow-y-auto max-w-6xl mx-auto">
+            <section id="tab-dashboard" class="tab-content active">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 text-center font-black">
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-50"><p class="text-[10px] text-slate-400 uppercase mb-1">Users</p><h3 id="stat-u" class="text-4xl text-slate-800">0</h3></div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-orange-100"><p class="text-[10px] text-slate-400 uppercase mb-1">Pending</p><h3 id="stat-p" class="text-4xl text-orange-500">0</h3></div>
+                    <div class="bg-white p-8 rounded-3xl shadow-sm border border-green-100"><p class="text-[10px] text-slate-400 uppercase mb-1">Total Paid</p><h3 id="stat-w" class="text-4xl text-green-600">₹0</h3></div>
                 </div>
-            </header>
+            </section>
 
-            <main class="p-4 lg:p-10 max-w-6xl mx-auto">
-
-                <!-- 1. DASHBOARD -->
-                <section id="tab-dashboard" class="tab-content active">
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                        <div class="bg-white p-6 rounded-3xl shadow-sm border">
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Users</p>
-                            <h3 id="stat-total-users" class="text-3xl font-black text-slate-800">0</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-orange-100">
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Pending Wdr</p>
-                            <h3 id="stat-pending-wdr" class="text-3xl font-black text-orange-500">0</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-green-100">
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Total Paid</p>
-                            <h3 id="stat-total-paid" class="text-3xl font-black text-green-600">₹0</h3>
-                        </div>
-                        <div class="bg-white p-6 rounded-3xl shadow-sm border border-blue-100">
-                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Coins Flow</p>
-                            <h3 id="stat-total-coins" class="text-3xl font-black text-blue-600">0</h3>
-                        </div>
+            <section id="tab-settings" class="tab-content">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-sm border border-slate-100">
+                    <h2 class="text-2xl font-black text-slate-800 mb-8">System Control</h2>
+                    <div class="grid lg:grid-cols-3 gap-6 mb-8">
+                        <div class="space-y-2"><label class="text-xs font-bold text-slate-400">1₹ = ? Coins</label><input type="number" id="cfg-rate" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold"></div>
+                        <div class="space-y-2"><label class="text-xs font-bold text-slate-400">Ad Bonus</label><input type="number" id="cfg-ad" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold"></div>
+                        <div class="space-y-2"><label class="text-xs font-bold text-slate-400">Min Wdr ₹</label><input type="number" id="cfg-min" class="w-full p-4 bg-slate-50 rounded-2xl outline-none font-bold"></div>
                     </div>
-                </section>
+                    <button onclick="saveConfig()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl">SAVE SETTINGS</button>
+                </div>
+            </section>
 
-                <!-- 2. SYSTEM SETTINGS (CONTROL EVERYTHING) -->
-                <section id="tab-settings" class="tab-content">
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-10">
-                        <h4 class="font-extrabold text-xl mb-8 flex items-center gap-3 text-slate-800">
-                            <i class="fas fa-tools text-blue-500"></i> Global App Configuration
-                        </h4>
-                        <div class="grid lg:grid-cols-3 gap-8">
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-2">Coin Rate (1₹ = ? Coins)</label>
-                                <input type="number" id="set-coin-rate" class="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="e.g. 100">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-2">Ad Watch Reward (Coins)</label>
-                                <input type="number" id="set-ad-reward" class="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="e.g. 50">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-xs font-bold text-slate-400 uppercase ml-2">Min Withdrawal (₹)</label>
-                                <input type="number" id="set-min-wdr" class="w-full p-4 bg-slate-50 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 font-bold" placeholder="e.g. 100">
-                            </div>
-                        </div>
-                        <button onclick="saveGlobalSettings()" class="mt-8 bg-blue-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:bg-blue-700 transition active:scale-95">Update Global Settings</button>
+            <section id="tab-tasks" class="tab-content">
+                <div class="bg-white p-10 rounded-[2.5rem] shadow-sm mb-10">
+                    <h2 id="task-title" class="text-2xl font-black text-slate-800 mb-6">New Task (Required Link)</h2>
+                    <input type="hidden" id="edit-id">
+                    <div class="grid lg:grid-cols-2 gap-4 mb-6">
+                        <input id="t-n" type="text" placeholder="Mission Name" class="p-4 bg-slate-50 rounded-2xl outline-none font-bold">
+                        <input id="t-r" type="number" placeholder="Reward (Coins)" class="p-4 bg-slate-50 rounded-2xl outline-none font-bold">
+                        <input id="t-l" type="text" placeholder="https://link-to-target.com" class="p-4 bg-slate-50 rounded-2xl outline-none font-bold lg:col-span-2">
                     </div>
-                </section>
-
-                <!-- 3. MANAGE TASKS -->
-                <section id="tab-tasks" class="tab-content">
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-8">
-                        <h4 id="task-form-title" class="font-extrabold text-xl text-slate-800 mb-6">Create New Task</h4>
-                        <input type="hidden" id="edit-task-id">
-                        <div class="grid lg:grid-cols-2 gap-4 mb-4">
-                            <input id="t-name" type="text" placeholder="Task Name" class="p-4 bg-slate-50 rounded-xl outline-none border-2 border-transparent focus:border-blue-500">
-                            <select id="t-type" class="p-4 bg-slate-50 rounded-xl border-none font-bold">
-                                <option value="Join Channel">Join Channel</option>
-                                <option value="Visit Website">Visit Website</option>
-                                <option value="Watch Ad">Watch Ad</option>
-                            </select>
-                            <input id="t-reward" type="number" placeholder="Reward (Coins)" class="p-4 bg-slate-50 rounded-xl outline-none border-2 border-transparent focus:border-blue-500">
-                            <input id="t-link" type="text" placeholder="URL (https://...)" class="p-4 bg-slate-50 rounded-xl outline-none border-2 border-transparent focus:border-blue-500">
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="saveTask()" id="btn-save-task" class="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold shadow-lg">Save Mission</button>
-                            <button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden bg-slate-200 text-slate-600 px-8 py-4 rounded-xl font-bold">Cancel</button>
-                        </div>
+                    <div class="flex gap-4">
+                        <button onclick="saveTask()" id="btn-t" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg">PUBLISH</button>
+                        <button onclick="cancelEdit()" id="btn-c" class="hidden bg-slate-200 text-slate-600 px-10 py-4 rounded-2xl font-black">CANCEL</button>
                     </div>
-                    <div id="task-grid" class="grid lg:grid-cols-2 gap-4"></div>
-                </section>
+                </div>
+                <div id="task-grid" class="grid lg:grid-cols-2 gap-6"></div>
+            </section>
 
-                <!-- 4. WITHDRAWALS -->
-                <section id="tab-withdrawals" class="tab-content">
-                    <div class="bg-white rounded-3xl shadow-sm border overflow-hidden">
-                        <table class="w-full text-left">
-                            <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400">
-                                <tr>
-                                    <th class="px-6 py-5">User ID</th>
-                                    <th class="px-6 py-5">UPI ID</th>
-                                    <th class="px-6 py-5">Amount</th>
-                                    <th class="px-6 py-5">Status</th>
-                                    <th class="px-6 py-5 text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="wdr-table" class="divide-y divide-slate-50"></tbody>
-                        </table>
-                    </div>
-                </section>
-
-                <!-- 5. USER INSPECTOR -->
-                <section id="tab-users" class="tab-content">
-                    <div class="flex gap-4 mb-8">
-                        <input id="user-search" type="text" placeholder="Search by Telegram UID..." class="flex-1 p-5 bg-white rounded-2xl shadow-sm border-none outline-none focus:ring-2 focus:ring-blue-500 font-bold">
-                        <button onclick="findUser()" class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold">Search User</button>
-                    </div>
-                    <div id="user-details" class="hidden"></div>
-                </section>
-
-            </main>
-        </div>
+            <section id="tab-withdrawals" class="tab-content">
+                <div class="bg-white rounded-3xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400"><tr class="border-b"><th class="px-8 py-6">UID</th><th class="px-8 py-6">UPI</th><th class="px-8 py-6">Amount</th><th class="px-8 py-6">Action</th></tr></thead>
+                        <tbody id="payout-table" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
-        // FIREBASE SETUP
         const firebaseConfig = {
             apiKey: "AIzaSyBbqNPQfhPHqZuhZM2zzGQnf4f53Sw-jrU",
             authDomain: "tasksearningsbot.firebaseapp.com",
@@ -190,222 +100,91 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // 1. LOGIN
         function login() {
-            const u = document.getElementById('adm-user').value;
-            const p = document.getElementById('adm-pass').value;
+            const u = document.getElementById('adm-u').value;
+            const p = document.getElementById('adm-p').value;
             if(u === "jsbotwolde" && p === "12345678") {
-                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('login-screen').style.display = 'none';
                 document.getElementById('admin-app').classList.remove('hidden');
-                startAdmin();
-            } else {
-                Swal.fire('Error', 'Incorrect Credentials', 'error');
-            }
+                startHub();
+            } else Swal.fire('Error', 'Invalid Access', 'error');
         }
 
-        // 2. DATA LOADERS
-        function startAdmin() {
-            loadDashboard();
-            loadSettings();
-            loadTasks();
-            loadWithdrawals();
-        }
-
-        function loadDashboard() {
+        function startHub() {
             db.collection('users').onSnapshot(snap => {
-                document.getElementById('stat-total-users').innerText = snap.size;
-                let paid = 0, coins = 0;
-                snap.forEach(d => {
-                    paid += (d.data().totalWithdrawals || 0);
-                    coins += (d.data().coins || 0);
-                });
-                document.getElementById('stat-total-paid').innerText = `₹${paid}`;
-                document.getElementById('stat-total-coins').innerText = coins;
+                document.getElementById('stat-u').innerText = snap.size;
+                let paid = 0; snap.forEach(d => { paid += (d.data().totalWithdrawals || 0); });
+                document.getElementById('stat-w').innerText = `₹${paid}`;
             });
             db.collection('withdrawals').where('status','==','pending').onSnapshot(snap => {
-                document.getElementById('stat-pending-wdr').innerText = snap.size;
+                document.getElementById('stat-p').innerText = snap.size;
+                document.getElementById('payout-table').innerHTML = snap.docs.map(doc => {
+                    const w = doc.data();
+                    return `<tr class="border-b"><td class="px-8 py-6 font-bold text-blue-600">#${w.userId}</td><td class="px-8 py-6 text-slate-400 font-bold">${w.upi}</td><td class="px-8 py-6 font-black">₹${w.amount}</td><td class="px-8 py-6"><button onclick="procW('${doc.id}')" class="bg-green-500 text-white p-2 rounded-lg"><i class="fas fa-check"></i></button></td></tr>`;
+                }).join('');
             });
-        }
-
-        // 3. SYSTEM SETTINGS
-        function loadSettings() {
             db.collection('settings').doc('global').onSnapshot(doc => {
                 if(doc.exists) {
-                    const data = doc.data();
-                    document.getElementById('set-coin-rate').value = data.coin_rate;
-                    document.getElementById('set-ad-reward').value = data.ads_reward;
-                    document.getElementById('set-min-wdr').value = data.min_withdrawal;
+                    const d = doc.data();
+                    document.getElementById('cfg-rate').value = d.coin_rate;
+                    document.getElementById('cfg-ad').value = d.ads_reward;
+                    document.getElementById('cfg-min').value = d.min_withdrawal;
                 }
             });
+            loadTasks();
         }
 
-        async function saveGlobalSettings() {
-            const rate = document.getElementById('set-coin-rate').value;
-            const ads = document.getElementById('set-ad-reward').value;
-            const min = document.getElementById('set-min-wdr').value;
-
-            await db.collection('settings').doc('global').set({
-                coin_rate: parseInt(rate),
-                ads_reward: parseInt(ads),
-                min_withdrawal: parseInt(min),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            Swal.fire('System Updated', 'Global values changed successfully', 'success');
+        async function saveConfig() {
+            const r = parseInt(document.getElementById('cfg-rate').value);
+            const a = parseInt(document.getElementById('cfg-ad').value);
+            const m = parseInt(document.getElementById('cfg-min').value);
+            await db.collection('settings').doc('global').set({ coin_rate: r, ads_reward: a, min_withdrawal: m });
+            Swal.fire('Success', 'System configuration updated', 'success');
         }
 
-        // 4. TASK MANAGEMENT (ADD/EDIT/DELETE)
         async function saveTask() {
-            const id = document.getElementById('edit-task-id').value;
-            const name = document.getElementById('t-name').value;
-            const reward = parseInt(document.getElementById('t-reward').value);
-            const type = document.getElementById('t-type').value;
-            const link = document.getElementById('t-link').value;
+            const id = document.getElementById('edit-id').value;
+            const name = document.getElementById('t-n').value;
+            const reward = parseInt(document.getElementById('t-r').value);
+            const link = document.getElementById('t-l').value;
+            if(!name || !reward || !link) return;
 
-            if(!name || !reward) return;
-
-            const taskData = { name, reward, type, link, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+            if(id) await db.collection('tasks').doc(id).update({ name, reward, link });
+            else await db.collection('tasks').add({ name, reward, link, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
             
-            if(id) {
-                await db.collection('tasks').doc(id).update(taskData);
-                Swal.fire('Updated', 'Task edited successfully', 'success');
-                cancelEdit();
-            } else {
-                taskData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                await db.collection('tasks').add(taskData);
-                Swal.fire('Published', 'New task added', 'success');
-            }
-            clearTaskForm();
+            cancelEdit();
+            Swal.fire('Task Live', '', 'success');
         }
 
         function loadTasks() {
-            db.collection('tasks').orderBy('updatedAt','desc').onSnapshot(snap => {
-                const cont = document.getElementById('task-grid');
-                cont.innerHTML = snap.docs.map(doc => {
+            db.collection('tasks').onSnapshot(snap => {
+                document.getElementById('task-grid').innerHTML = snap.docs.map(doc => {
                     const t = doc.data();
-                    return `
-                    <div class="bg-white p-6 rounded-3xl border flex items-center justify-between">
-                        <div>
-                            <span class="text-[9px] font-bold bg-blue-100 text-blue-600 px-2 py-0.5 rounded uppercase">${t.type}</span>
-                            <h5 class="font-bold text-slate-800 mt-2">${t.name}</h5>
-                            <p class="text-green-600 font-bold text-xs">${t.reward} Coins</p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="editTask('${doc.id}', '${t.name}', '${t.reward}', '${t.type}', '${t.link}')" class="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl hover:text-blue-500 transition"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteTask('${doc.id}')" class="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl hover:text-red-500 transition"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
+                    return `<div class="bg-white p-6 rounded-3xl border flex items-center justify-between shadow-sm"><div><h4 class="font-bold text-slate-800 uppercase text-xs">${t.name}</h4><p class="text-blue-600 font-black text-sm">${t.reward} Coins</p></div><div class="flex gap-2"><button onclick="editT('${doc.id}','${t.name}',${t.reward},'${t.link}')" class="p-3 bg-slate-50 rounded-xl text-slate-400"><i class="fas fa-edit"></i></button><button onclick="db.collection('tasks').doc('${doc.id}').delete()" class="p-3 bg-slate-50 rounded-xl text-red-400"><i class="fas fa-trash"></i></button></div></div>`;
                 }).join('');
             });
         }
 
-        function editTask(id, name, reward, type, link) {
-            document.getElementById('edit-task-id').value = id;
-            document.getElementById('t-name').value = name;
-            document.getElementById('t-reward').value = reward;
-            document.getElementById('t-type').value = type;
-            document.getElementById('t-link').value = link;
-            
-            document.getElementById('task-form-title').innerText = "Edit Task Mode";
-            document.getElementById('btn-save-task').innerText = "Update Mission";
-            document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function editT(id, n, r, l) {
+            document.getElementById('edit-id').value = id; document.getElementById('t-n').value = n; document.getElementById('t-r').value = r; document.getElementById('t-l').value = l;
+            document.getElementById('task-title').innerText = "Update Mission"; document.getElementById('btn-t').innerText = "UPDATE"; document.getElementById('btn-c').classList.remove('hidden');
         }
 
         function cancelEdit() {
-            clearTaskForm();
-            document.getElementById('task-form-title').innerText = "Create New Task";
-            document.getElementById('btn-save-task').innerText = "Save Mission";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-            document.getElementById('edit-task-id').value = "";
+            document.getElementById('edit-id').value = ''; document.getElementById('t-n').value = ''; document.getElementById('t-r').value = ''; document.getElementById('t-l').value = '';
+            document.getElementById('task-title').innerText = "New Task"; document.getElementById('btn-t').innerText = "PUBLISH"; document.getElementById('btn-c').classList.add('hidden');
         }
 
-        async function deleteTask(id) {
-            if(confirm('Delete this mission?')) await db.collection('tasks').doc(id).delete();
+        async function procW(id) {
+            await db.collection('withdrawals').doc(id).update({ status: 'approved' });
+            Swal.fire('Payout Approved!', '', 'success');
         }
 
-        function clearTaskForm() {
-            document.getElementById('t-name').value = "";
-            document.getElementById('t-reward').value = "";
-            document.getElementById('t-link').value = "";
-        }
-
-        // 5. WITHDRAWALS
-        function loadWithdrawals() {
-            db.collection('withdrawals').orderBy('createdAt','desc').onSnapshot(snap => {
-                const cont = document.getElementById('wdr-table');
-                cont.innerHTML = snap.docs.map(doc => {
-                    const w = doc.data();
-                    const color = w.status === 'approved' ? 'text-green-500' : (w.status === 'rejected' ? 'text-red-500' : 'text-orange-500');
-                    return `
-                    <tr class="hover:bg-slate-50 border-b border-slate-50">
-                        <td class="px-6 py-5 font-bold text-blue-600">ID: ${w.userId}</td>
-                        <td class="px-6 py-5 text-slate-400 font-medium">${w.upi}</td>
-                        <td class="px-6 py-5 font-black">₹${w.amount}</td>
-                        <td class="px-6 py-5 font-black uppercase text-[10px] ${color}">${w.status}</td>
-                        <td class="px-6 py-5 text-center">
-                            ${w.status === 'pending' ? `
-                                <div class="flex justify-center gap-2">
-                                    <button onclick="updWdr('${doc.id}', 'approved')" class="bg-green-500 text-white p-2 rounded-xl"><i class="fas fa-check"></i></button>
-                                    <button onclick="updWdr('${doc.id}', 'rejected')" class="bg-red-500 text-white p-2 rounded-xl"><i class="fas fa-times"></i></button>
-                                </div>
-                            ` : 'COMPLETED'}
-                        </td>
-                    </tr>`;
-                }).join('');
-            });
-        }
-
-        async function updWdr(id, status) {
-            const ref = db.collection('withdrawals').doc(id);
-            const w = (await ref.get()).data();
-            if(status === 'approved') {
-                await ref.update({ status: 'approved' });
-                await db.collection('announcements').add({ title: `🔔 Payment of ₹${w.amount} processed for ID ${w.userId}`, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-            } else {
-                await ref.update({ status: 'rejected' });
-                await db.collection('users').doc(w.userId.toString()).update({ coins: firebase.firestore.FieldValue.increment(w.amount * 100) });
-            }
-        }
-
-        // 6. UTILS
         function switchTab(id) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('aside button').forEach(b => b.classList.remove('sidebar-active', 'text-white'));
-            document.querySelectorAll('aside button').forEach(b => b.classList.add('text-slate-400'));
-
+            document.querySelectorAll('aside button').forEach(b => b.classList.remove('sidebar-active','text-white'));
             document.getElementById(`tab-${id}`).classList.add('active');
-            document.getElementById(`nav-${id}`).classList.add('sidebar-active', 'text-white');
-            document.getElementById(`nav-${id}`).classList.remove('text-slate-400');
-            document.getElementById('page-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-        }
-
-        async function findUser() {
-            const uid = document.getElementById('user-search').value;
-            const doc = await db.collection('users').doc(uid).get();
-            if(!doc.exists) return Swal.fire('Error','User not found','error');
-            const u = doc.data();
-            const cont = document.getElementById('user-details');
-            cont.classList.remove('hidden');
-            cont.innerHTML = `
-            <div class="bg-white p-10 rounded-[3rem] shadow-sm flex flex-col items-center">
-                <img src="${u.photoURL}" class="w-24 h-24 rounded-3xl mb-4 border-4 border-blue-50">
-                <h3 class="text-2xl font-bold">${u.name}</h3>
-                <p class="text-slate-400 font-bold mb-8">UID: ${u.id}</p>
-                <div class="grid grid-cols-2 gap-4 w-full">
-                    <div class="bg-slate-50 p-6 rounded-3xl text-center"><p class="text-xs text-slate-400 uppercase font-black">Coins</p><p class="text-2xl font-black">${u.coins}</p></div>
-                    <div class="bg-slate-50 p-6 rounded-3xl text-center"><p class="text-xs text-slate-400 uppercase font-black">Paid</p><p class="text-2xl font-black">₹${u.totalWithdrawals}</p></div>
-                </div>
-                <div class="flex gap-4 mt-8 w-full">
-                    <button onclick="editBal('${u.id}', 1000)" class="flex-1 bg-green-100 text-green-600 py-4 rounded-2xl font-black">+ 1000 Coins</button>
-                    <button onclick="editBal('${u.id}', -1000)" class="flex-1 bg-red-100 text-red-600 py-4 rounded-2xl font-black">- 1000 Coins</button>
-                </div>
-            </div>`;
-        }
-
-        async function editBal(uid, amt) {
-            await db.collection('users').doc(uid).update({ coins: firebase.firestore.FieldValue.increment(amt) });
-            Swal.fire('Balance Updated', '', 'success');
-            findUser();
+            document.getElementById(`n-${id}`).classList.add('sidebar-active','text-white');
         }
     </script>
 </body>

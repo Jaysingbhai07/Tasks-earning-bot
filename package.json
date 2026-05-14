@@ -1,0 +1,9 @@
+{
+  "name": "bot-backend",
+  "version": "1.0.0",
+  "main": "api/telegram.js",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "firebase": "^10.7.1"
+  }
+}
